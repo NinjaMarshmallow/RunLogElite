@@ -1,7 +1,7 @@
 <template>
   <div class="activity">
     <p>Stats</p>
-    <p >You have traveled {{totals.distance}} miles total in {{this.timeFormat(totals.time)}}.</p>
+    <p >You have traveled {{totals.distance}} km total in {{this.timeFormat(totals.time)}}.</p>
   </div>
 </template>
 

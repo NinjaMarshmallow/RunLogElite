@@ -3,7 +3,7 @@
     <p>Activity</p>
     <div v-for="act in activities" :key="act.time">
       <p>
-        You traveled {{ act.distance }} miles in {{ timeFormat(act.time) }} minutes
+        You traveled {{ act.distance }} km in {{ timeFormat(act.time) }} minutes
       </p>
     </div>
   </div>
