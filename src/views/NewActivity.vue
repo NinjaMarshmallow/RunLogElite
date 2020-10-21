@@ -2,7 +2,7 @@
   <v-container>
     <v-layout row>
       <v-flex class="text-center font-weight-black">
-        <h1>Upload a photo</h1>
+        <h1>Upload an Activity File</h1>
       </v-flex>
     </v-layout>
 
@@ -10,18 +10,17 @@
       <v-flex md6 offset-sm3>
         <div>
           <div>
-            <v-btn @click="click1">choose photo</v-btn>
+            <button @click="click1">Choose File</button>
             <input
               type="file"
               ref="input1"
               style="display: none"
-              @change="previewImage"
-              accept="image/*"
+              @change="previewFile"
             />
           </div>
 
-          <div v-if="imageData != null">
-            <img class="preview" height="268" width="356" :src="img1" />
+          <div v-if="fitData != null">
+            <p>{{fitData.name}} has been uploaded</p>
             <br />
           </div>
         </div>
@@ -34,35 +33,31 @@
         </v-text-field>
       </v-flex>
     </v-layout>
-    <v-layout row>
-      <v-flex class="text-center">
-        <v-btn color="pink" @click="create">upload</v-btn>
-      </v-flex>
-    </v-layout>
   </v-container>
 </template>
 
 
 <script>
 import firebase from "firebase";
+import * as fs from "fs-web";
+import * as FitParserImport from "fit-file-parser/dist/fit-parser.js";
 export default {
   name: "NewActivity",
   data() {
     return {
       caption: "",
-      img1: "",
-      imageData: null
+      fitUrl: "",
+      fitData: null
     };
   },
   methods: {
     create() {
       const post = {
-        photo: this.img1,
         caption: this.caption
       };
       firebase
         .database()
-        .ref("PhotoGallery")
+        .ref("FITFiles")
         .push(post)
         .then(response => {
           console.log(response);
@@ -74,18 +69,20 @@ export default {
     click1() {
       this.$refs.input1.click();
     },
-    previewImage(event) {
+    previewFile(event) {
       this.uploadValue = 0;
-      this.img1 = null;
-      this.imageData = event.target.files[0];
+      console.log(event);
+      this.fitData = event.target.files[0];
+      console.log(this.fitData);
       this.onUpload();
     },
     onUpload() {
-      this.img1 = null;
+      const fitFileID = this.fitData.name;
+      // TODO Check if it exists already before adding
       const storageRef = firebase
         .storage()
-        .ref(`${this.imageData.name}`)
-        .put(this.imageData);
+        .ref(`${this.fitData.name}`)
+        .put(this.fitData);
       storageRef.on(
         `state_changed`,
         snapshot => {
@@ -98,8 +95,64 @@ export default {
         () => {
           this.uploadValue = 100;
           storageRef.snapshot.ref.getDownloadURL().then(url => {
-            this.img1 = url;
-            console.log(this.img1);
+            this.fitUrl = url;
+            console.log(this.fitUrl);
+
+            fetch(url)
+              .then(response => response.arrayBuffer())
+              .then(buffer => {
+                // Create a FitParser instance (options argument is optional)
+                const FitParser = FitParserImport.default;
+                const fitParser = new FitParser({
+                  force: true,
+                  speedUnit: "km/h",
+                  lengthUnit: "km",
+                  temperatureUnit: "kelvin",
+                  elapsedRecordField: true,
+                  mode: "cascade"
+                });
+                fitParser.parse(buffer, function(error, data) {
+                  // Handle result of parse method
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    console.log(data);
+                    const databaseEntry = {};
+                    const session = data.activity.sessions[0];
+                    databaseEntry["ID"] = fitFileID;
+                    databaseEntry["distance"] = session.total_distance.toFixed(2);
+                    databaseEntry["time"] = session.total_timer_time.toFixed(2);
+                    databaseEntry["cadence"] = session.avg_cadence * 2;
+                    databaseEntry["fastMile"] = Math.min(
+                      ...session.laps
+                        .filter(lap => lap.total_distance > 1.609)
+                        .map(lap => lap.total_timer_time)
+                    ).toFixed(2);
+                    console.log(databaseEntry);
+                    const db = firebase.firestore();
+                    db.collection("activity")
+                      .get()
+                      .then(snapshot => {
+                        const docsWithThisID = snapshot.docs.some(doc => {
+                          doc.data().ID == fitFileID;
+                        });
+                        console.log(docsWithThisID);
+                        if (!docsWithThisID) {
+                          db.collection("activity")
+                            .add(databaseEntry)
+                            .then(ref =>
+                              console.log(
+                                "FIT File Parsed and Saved with ID: ",
+                                ref.id
+                              )
+                            );
+                        } else {
+                          console.log("Already Uploaded.");
+                        }
+                      });
+                  }
+                });
+              });
           });
         }
       );
