@@ -77,6 +77,7 @@ export default {
       this.onUpload();
     },
     onUpload() {
+      const db = firebase.firestore();
       const fitFileID = this.fitData.name;
       // TODO Check if it exists already before adding
       const storageRef = firebase
@@ -129,7 +130,6 @@ export default {
                         .map(lap => lap.total_timer_time)
                     ).toFixed(2);
                     console.log(databaseEntry);
-                    const db = firebase.firestore();
                     db.collection("activity")
                       .get()
                       .then(snapshot => {
