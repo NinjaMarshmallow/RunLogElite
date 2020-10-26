@@ -1,13 +1,13 @@
 <template>
   <div v-if="!debug" class="stats">
     <p>Stats</p>
-    <LineItem data= totals />
+    <LineItem data="totals" />
   </div>
 </template>
 
 <script>
 import { Component, Prop, Vue } from "vue-property-decorator";
-import LineItem from '@/components/LineItem.vue'
+import LineItem from "@/components/LineItem.vue";
 @Component({
   name: "Stats",
   components: {
@@ -48,7 +48,7 @@ export default class Stats extends Vue {
             time: parseFloat(result.time) + parseFloat(item.time)
           };
         });
-        console.log("Stat Totals")
+        console.log("Stat Totals");
         console.log(this.totals);
       });
   }

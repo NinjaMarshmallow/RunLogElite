@@ -1,8 +1,8 @@
 <template>
   <div class="activity">
-    <p>Activity</p>
+    <LineItem class="header" :activity="headers" />
     <div v-for="act in activities" :key="act.ID">
-      <LineItem :data="addCalculatedData(act)" />
+      <LineItem :activity="addCalculatedData(act)" />
     </div>
   </div>
 </template>
@@ -20,7 +20,17 @@ import LineItem from "@/components/LineItem.vue";
 export default class Activity extends Vue {
   data() {
     return {
-      activities: []
+      activities: [],
+      headers: {
+        type: "Activity",
+        date: "Date",
+        dateTime: "Time",
+        distance: "Distance",
+        time: "Duration",
+        pace: "Avg Pace",
+        fastDistance: "Fastest Mile",
+        cadence: "Cadence"
+      }
     };
   }
 
@@ -40,21 +50,69 @@ export default class Activity extends Vue {
         console.log(this.activities);
       });
   }
+  timeFormat(seconds) {
+    const hours = (seconds / 3600) | 0;
+    let minutesMod = ((seconds / 60) | 0) % 60;
+    let secondsMod = seconds % 60 | 0;
+    if (secondsMod < 10) {
+      secondsMod = "0" + secondsMod;
+    }
+    if (minutesMod < 10) {
+      minutesMod = "0" + minutesMod;
+    }
+    let hourPortion = "";
+    if (hours < 1) hourPortion = "";
+    else hourPortion = hours + "h ";
+    return hourPortion + minutesMod + "m " + secondsMod + "s";
+  }
+
+  paceFormat(seconds) {
+    const minutes = ((seconds / 60) | 0) % 60;
+    let secondsMod = seconds % 60 | 0;
+    if (secondsMod < 10) {
+      secondsMod = "0" + secondsMod;
+    }
+    return minutes + ":" + secondsMod;
+  }
 
   addCalculatedData(activity) {
     const distanceConversion = 1.609;
-    const result = activity;
-    result.pace = (activity.time / (activity.distance / distanceConversion));
     const timeStamp = new Date(activity.startTime.seconds * 1000);
-    result.date = timeStamp.toDateString();
-    result.dateTime = timeStamp.toLocaleTimeString('en-US').replace(/:[0-9]. /g, '').toLowerCase();
-    result.fastDistance = Math.min(
-      ...result.laps
-        .filter(lap => lap.lapTrigger === "distance")
-        .map(lap => lap.totalTime)
-    ).toFixed(2);
+    const result = {};
+
+    result.type = activity.type;
+    result.date = timeStamp.toDateString().slice(0, -5);
+    result.dateTime = timeStamp
+      .toLocaleTimeString("en-US")
+      .replace(/:[0-9]. /g, "")
+      .toLowerCase();
+    result.distance = activity.distance;
+    result.time = this.timeFormat(activity.time);
+    result.pace = this.paceFormat(
+      activity.time / (activity.distance / distanceConversion)
+    );
+    result.fastDistance = this.paceFormat(
+      Math.min(
+        ...activity.laps
+          .filter(lap => lap.lapTrigger === "distance")
+          .map(lap => lap.totalTime)
+      ).toFixed(2)
+    );
+    result.cadence = activity.cadence;
 
     return result;
   }
 }
 </script>
+
+<style lang="scss">
+.header {
+  display: flex;
+  flex-direction: row;
+  background-color: #ddd;
+  font-weight: bold;
+}
+.activity {
+  margin-bottom: 200px;
+}
+</style>
