@@ -1,31 +1,36 @@
 <template>
-  <div class="activity">
+  <div v-if="!debug" class="stats">
     <p>Stats</p>
-    <p >You have traveled {{totals.distance}} km total in {{this.timeFormat(totals.time)}}.</p>
+    <LineItem data= totals />
   </div>
 </template>
 
 <script>
 import { Component, Prop, Vue } from "vue-property-decorator";
-@Component
+import LineItem from '@/components/LineItem.vue'
+@Component({
+  name: "Stats",
+  components: {
+    LineItem
+  }
+})
 export default class Stats extends Vue {
   data() {
     return {
       testCollection: [],
-      totals: {}
-
+      totals: {},
+      debug: true
     };
   }
   timeFormat(seconds) {
-    const hours = seconds / 3600 | 0;
-    const minutes = (seconds / 60 | 0) % 60 ;
+    const hours = (seconds / 3600) | 0;
+    const minutes = ((seconds / 60) | 0) % 60;
     let secondsMod = seconds % 60 | 0;
     if (secondsMod < 10) {
       secondsMod = "0" + secondsMod;
     }
     return hours + "h " + minutes + "m " + secondsMod + "s";
   }
-
 
   mounted() {
     const db = this.$firebase.firestore();
@@ -38,11 +43,14 @@ export default class Stats extends Vue {
         });
         this.testCollection = testCollection;
         this.totals = this.testCollection.reduce((result, item) => {
-          return { distance: parseFloat(result.distance) + parseFloat(item.distance), 
-                  time: parseFloat(result.time) + parseFloat(item.time) }
+          return {
+            distance: parseFloat(result.distance) + parseFloat(item.distance),
+            time: parseFloat(result.time) + parseFloat(item.time)
+          };
         });
-        console.log(this.totals)
+        console.log("Stat Totals")
+        console.log(this.totals);
       });
   }
-};
+}
 </script>

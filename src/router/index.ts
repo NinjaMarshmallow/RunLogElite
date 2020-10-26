@@ -3,7 +3,6 @@ import VueRouter, { RouteConfig } from "vue-router";
 import Home from "../views/Home.vue";
 import Activities from "../views/Activities.vue";
 import NewActivity from "../views/NewActivity.vue";
-import ParseActivity from "../views/ParseActivity.vue";
 
 Vue.use(VueRouter);
 
@@ -22,7 +21,7 @@ const routes: Array<RouteConfig> = [
     path: "/new",
     name: "NewActivity",
     component: NewActivity
-  },
+  }
 ];
 
 const router = new VueRouter({

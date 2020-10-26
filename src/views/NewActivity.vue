@@ -10,6 +10,17 @@
       <v-flex md6 offset-sm3>
         <div>
           <div>
+            <select v-model="selectedActivity">
+              <option
+                v-for="type in activityTypes"
+                v-bind:value="type"
+                :key="type"
+              >
+                {{ type }}
+              </option>
+            </select>
+          </div>
+          <div>
             <button @click="click1">Choose File</button>
             <input
               type="file"
@@ -20,7 +31,7 @@
           </div>
 
           <div v-if="fitData != null">
-            <p>{{fitData.name}} has been uploaded</p>
+            <p>{{ fitData.name }} has been uploaded</p>
             <br />
           </div>
         </div>
@@ -36,10 +47,8 @@
   </v-container>
 </template>
 
-
 <script>
 import firebase from "firebase";
-import * as fs from "fs-web";
 import * as FitParserImport from "fit-file-parser/dist/fit-parser.js";
 export default {
   name: "NewActivity",
@@ -47,7 +56,9 @@ export default {
     return {
       caption: "",
       fitUrl: "",
-      fitData: null
+      fitData: null,
+      selectedActivity: "Run",
+      activityTypes: ["Run", "Bike", "Swim", "Walk"]
     };
   },
   methods: {
@@ -79,6 +90,7 @@ export default {
     onUpload() {
       const db = firebase.firestore();
       const fitFileID = this.fitData.name;
+      const activityType = this.selectedActivity;
       // TODO Check if it exists already before adding
       const storageRef = firebase
         .storage()
@@ -121,14 +133,25 @@ export default {
                     const databaseEntry = {};
                     const session = data.activity.sessions[0];
                     databaseEntry["ID"] = fitFileID;
-                    databaseEntry["distance"] = session.total_distance.toFixed(2);
+                    databaseEntry["type"] = activityType;
+                    databaseEntry["timestamp"] = session.timestamp;
+                    databaseEntry["startTime"] = session.start_time;
+                    databaseEntry["ascent"] = session.total_ascent;
+                    databaseEntry["descent"] = session.total_descent;
+                    databaseEntry["calories"] = session.total_calories;
+                    databaseEntry["distance"] = session.total_distance.toFixed(
+                      2
+                    );
                     databaseEntry["time"] = session.total_timer_time.toFixed(2);
                     databaseEntry["cadence"] = session.avg_cadence * 2;
-                    databaseEntry["fastMile"] = Math.min(
-                      ...session.laps
-                        .filter(lap => lap.total_distance > 1.609)
-                        .map(lap => lap.total_timer_time)
-                    ).toFixed(2);
+                    databaseEntry["laps"] = session.laps.map(lap => {
+                      return {
+                        totalDistance: lap.total_distance,
+                        totalTime: lap.total_timer_time,
+                        lapTrigger: lap.lap_trigger
+                      };
+                    });
+
                     console.log(databaseEntry);
                     db.collection("activity")
                       .get()

@@ -2,10 +2,9 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import firebase from "firebase";
-require('firebase/firestore');
-import * as Dropzone from 'dropzone';
+require("firebase/firestore");
+import * as Dropzone from "dropzone";
 Vue.config.productionTip = false;
-
 
 Vue.prototype.$firebase = firebase;
 const firebaseConfig = {
