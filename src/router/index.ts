@@ -3,6 +3,9 @@ import VueRouter, { RouteConfig } from "vue-router";
 import Home from "../views/Home.vue";
 import Activities from "../views/Activities.vue";
 import NewActivity from "../views/NewActivity.vue";
+import HeatMapActivity from "../views/HeatMapActivity.vue";
+import ActivityMapActivity from "../views/ActivityMapActivity.vue";
+
 
 Vue.use(VueRouter);
 
@@ -21,6 +24,16 @@ const routes: Array<RouteConfig> = [
     path: "/new",
     name: "NewActivity",
     component: NewActivity
+  },
+  {
+    path: "/heatmap",
+    name: "HeatMapActivity",
+    component: HeatMapActivity
+  },
+  {
+    path: "/map",
+    name: "ActivityMapActivity",
+    component: ActivityMapActivity
   }
 ];
 

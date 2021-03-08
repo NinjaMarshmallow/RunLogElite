@@ -2,11 +2,13 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import firebase from "firebase";
+import * as L from "leaflet";
 require("firebase/firestore");
 import * as Dropzone from "dropzone";
 Vue.config.productionTip = false;
 
 Vue.prototype.$firebase = firebase;
+Vue.prototype.$L = L;
 const firebaseConfig = {
   apiKey: "AIzaSyD33MuwlPruy2aYqziH1dqZRRMvtn4mjTY",
   authDomain: "runlogelite.firebaseapp.com",
@@ -20,6 +22,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
+
 
 Dropzone.options.gpsFile = {
   paramName: "file", // The name that will be used to transfer the file

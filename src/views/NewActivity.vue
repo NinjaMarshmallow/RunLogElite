@@ -151,6 +151,18 @@ export default {
                         lapTrigger: lap.lap_trigger
                       };
                     });
+                    databaseEntry["coordinates"] = session.laps.map(lap => {
+                      return lap.records
+                        .filter(record => record.position_lat !== undefined)
+                        .map(record => {
+                          return {
+                            latitude: record.position_lat,
+                            longitude: record.position_long,
+                            timestamp: record.timestamp,
+                            speed: record.speed
+                          }
+                        })
+                    }).flat(2);
 
                     console.log(databaseEntry);
                     db.collection("activity")

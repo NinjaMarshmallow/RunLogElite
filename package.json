@@ -16,6 +16,7 @@
     "firebase": "^7.24.0",
     "fit-file-parser": "^1.8.4",
     "fs-web": "^1.0.1",
+    "leaflet": "^1.7.1",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2",
@@ -23,6 +24,7 @@
     "vuefire": "^2.2.4"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.5.23",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.0",
